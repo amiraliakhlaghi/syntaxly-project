@@ -48,8 +48,8 @@ const Notifications = () => {
         if (res.error) {
           setError(res.error);
         }
-      } catch (error: any) {
-        setError(error.message || "An error occured!");
+      } catch (error) {
+        setError("An error occured!");
       } finally {
         setLoading(false);
       }

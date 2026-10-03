@@ -51,8 +51,8 @@ const FollowButton = ({
       }
 
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.response.data.error);
+    } catch (error) {
+      // toast.error(error.response.data.error);
     } finally {
       setLoading(false);
     }
