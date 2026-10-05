@@ -21,9 +21,7 @@ const UserButton = () => {
 
   const handleSignOut = async () => {
     await signOut({ redirect: false });
-    await session.update();
-    router.push("/blog/feed/1");
-    router.refresh();
+    window.location.href = "/blog/feed/1";
   };
 
   return (
