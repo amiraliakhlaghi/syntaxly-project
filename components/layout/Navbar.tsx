@@ -8,7 +8,6 @@ import UserButton from "./UserButton";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
 import Tags from "./Tags";
 import { SquareCode } from "lucide-react";
 
@@ -19,16 +18,6 @@ const Navbar = () => {
   const router = useRouter();
 
   const isFeedPage = path.includes("/blog/feed");
-
-  useEffect(() => {
-    if (!isLoggedIn && path) {
-      const updateSession = async () => {
-        await session.update();
-      };
-
-      updateSession();
-    }
-  }, [isLoggedIn, path]);
 
   return (
     <nav className="sticky top-0 border-b z-50 bg-white dark:bg-slate-950">
