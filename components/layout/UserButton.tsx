@@ -20,7 +20,10 @@ const UserButton = () => {
   const isAdmin = session.data?.user.role === "ADMIN";
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/blog/feed/1" });
+    await signOut({ redirect: false });
+    await session.update();
+    router.push("/blog/feed/1");
+    router.refresh();
   };
 
   return (
