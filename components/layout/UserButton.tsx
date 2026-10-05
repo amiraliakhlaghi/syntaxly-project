@@ -19,6 +19,12 @@ const UserButton = () => {
 
   const isAdmin = session.data?.user.role === "ADMIN";
 
+  const handleSignOut = async () => {
+    await signOut({ redirect: false });
+    router.push("/blog/feed/1");
+    router.refresh();
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
@@ -31,47 +37,42 @@ const UserButton = () => {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent>
-        <DropdownMenuItem>
-          <button
-            onClick={() => router.push(`/user/${session.data?.user.userId}`)}
-            className="flex gap-2 items-center"
-          >
-            <User size={18} /> Profile
-          </button>
+        <DropdownMenuItem
+          onSelect={() => router.push(`/user/${session.data?.user.userId}`)}
+          className="flex gap-2 items-center"
+        >
+          <User size={18} /> Profile
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem>
-          <button
-            onClick={() => router.push("/blog/create")}
-            className="flex gap-2 items-center"
-          >
-            <Pencil size={18} /> Create Post
-          </button>
+        <DropdownMenuItem
+          onSelect={() => router.push("/blog/create")}
+          className="flex gap-2 items-center"
+        >
+          <Pencil size={18} /> Create Post
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
         {isAdmin && (
           <>
-            <DropdownMenuItem>
-              <button
-                onClick={() => router.push("/admin")}
-                className="flex gap-2 items-center"
-              >
-                <Shield size={18} /> Admin
-              </button>
+            <DropdownMenuItem
+              onSelect={() => router.push("/admin")}
+              className="flex gap-2 items-center"
+            >
+              <Shield size={18} /> Admin
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
           </>
         )}
 
-        <DropdownMenuItem>
-          <button onClick={() => signOut()} className="flex gap-2 items-center">
-            <LogOut size={18} /> Sign Out
-          </button>
+        <DropdownMenuItem
+          onSelect={handleSignOut}
+          className="flex gap-2 items-center"
+        >
+          <LogOut size={18} /> Sign Out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
