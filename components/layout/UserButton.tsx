@@ -9,8 +9,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { logout } from "@/action/auth/logout";
 
 const UserButton = () => {
   const session = useSession();
@@ -20,7 +21,7 @@ const UserButton = () => {
   const isAdmin = session.data?.user.role === "ADMIN";
 
   const handleSignOut = async () => {
-    await signOut({ redirect: false });
+    await logout();
     window.location.href = "/blog/feed/1";
   };
 
