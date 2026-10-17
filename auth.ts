@@ -22,7 +22,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     sessionToken: {
       name:
         process.env.NODE_ENV === "production"
-          ? "syntaxly.session-token"
+          ? "__Secure-syntaxly.session-token"
           : "syntaxly.session-token",
       options: {
         httpOnly: true,
@@ -33,7 +33,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     },
     callbackUrl: {
-      name: "syntaxly.callback-url",
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-syntaxly.callback-url"
+          : "syntaxly.callback-url",
       options: {
         sameSite: "lax",
         path: "/",
@@ -42,7 +45,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     },
     csrfToken: {
-      name: "syntaxly.csrf-token",
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Host-syntaxly.csrf-token"
+          : "syntaxly.csrf-token",
       options: {
         httpOnly: true,
         sameSite: "lax",
@@ -52,7 +58,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     },
     pkceCodeVerifier: {
-      name: "syntaxly.pkce.code_verifier",
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-syntaxly.pkce.code_verifier"
+          : "syntaxly.pkce.code_verifier",
       options: {
         httpOnly: true,
         sameSite: "lax",
@@ -62,7 +71,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     },
     state: {
-      name: "syntaxly.state",
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-syntaxly.state"
+          : "syntaxly.state",
       options: {
         httpOnly: true,
         sameSite: "lax",
@@ -72,7 +84,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     },
     nonce: {
-      name: "syntaxly.nonce",
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-syntaxly.nonce"
+          : "syntaxly.nonce",
       options: {
         httpOnly: true,
         sameSite: "lax",
