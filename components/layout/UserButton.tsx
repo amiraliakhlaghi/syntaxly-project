@@ -9,9 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { logout } from "@/action/auth/logout";
 import { useNotification } from "@/store/use-notification";
 import { useBlog } from "@/store/use-blog";
 import { useReaction } from "@/store/use-reaction";
@@ -35,7 +34,7 @@ const UserButton = () => {
     clearReactions();
     clearFollow();
 
-    await logout();
+    await signOut({ redirect: false });
 
     window.location.href = "/blog/feed/1";
   };
