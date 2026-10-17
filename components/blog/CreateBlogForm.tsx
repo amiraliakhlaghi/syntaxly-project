@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import FormField from "../common/FormField";
 import AddCover from "./AddCover";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import CoverIamge from "./CoverImage";
 import BlogFormTags from "./BlogFormTags";
 import dynamic from "next/dynamic";
@@ -18,6 +18,8 @@ import { editBlog } from "@/action/blogs/edit-blog";
 import { useEdgeStore } from "@/lib/edgestore";
 import { deleteBlog } from "@/action/blogs/delete-blog";
 import { useRouter } from "next/navigation";
+import { useBlog } from "@/store/use-blog";
+import { useDebounceValue } from "@/hooks/useDebounceValue";
 
 const BlockNoteEditor = dynamic(() => import("./editor/BlockNoteEditor"), {
   ssr: false,
@@ -25,21 +27,34 @@ const BlockNoteEditor = dynamic(() => import("./editor/BlockNoteEditor"), {
 const CreateBlogForm = ({ blog }: { blog?: Blog }) => {
   const session = useSession();
   const userId = session.data?.user.userId;
-  const [uploadedCover, setUploadedCover] = useState<string>();
-  const [content, setContent] = useState<string | undefined>();
-  const [success, setSuccess] = useState<string | undefined>();
-  const [error, setError] = useState<string | undefined>();
-  const [isPublishing, startPublishing] = useTransition();
-  const [isSavingAsDraft, startSavingAsDraft] = useTransition();
-  const [isDeleting, startDeleting] = useTransition();
-  const { edgestore } = useEdgeStore();
   const router = useRouter();
+  const { edgestore } = useEdgeStore();
+
+  const draft = useBlog((s) => s.draft);
+  const hasHydrated = useBlog((s) => s._hasHydrated);
+  const initDraft = useBlog((s) => s.initDraft);
+  const setDraftFields = useBlog((s) => s.setDraftFields);
+  const publish = useBlog((s) => s.publish);
+  const saveAsDraft = useBlog((s) => s.saveAsDraft);
+  const deleteBlog = useBlog((s) => s.deleteBlog);
+  const isPublishing = useBlog((s) => s.isPublishing);
+  const isSavingDraft = useBlog((s) => s.isSavingDraft);
+  const isDeleting = useBlog((s) => s.isDeleting);
+  const error = useBlog((s) => s.error);
+  const success = useBlog((s) => s.success);
+  const resetStatus = useBlog((s) => s.resetStatus);
+
+  const [uploadedCover, setUploadedCover] = useState<string | undefined>();
+
+  const blogId = blog?.id ?? "new";
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
+    reset,
+    watch,
   } = useForm<BlogSchemaType>({
     resolver: zodResolver(BlogSchema),
     defaultValues: blog
@@ -58,6 +73,48 @@ const CreateBlogForm = ({ blog }: { blog?: Blog }) => {
   });
 
   useEffect(() => {
+    if (!hasHydrated) return;
+
+    const existingDraft = useBlog.getState().draft;
+
+    if (existingDraft && existingDraft?.id === blogId) {
+      reset({
+        userId: blog?.userId ?? userId,
+        isPublished: blog?.isPublished ?? false,
+        title: existingDraft.title,
+        content: existingDraft.content,
+        coverImage: existingDraft.coverImage,
+        tags: existingDraft.tags,
+      });
+      setUploadedCover(existingDraft.coverImage);
+    } else {
+      initDraft(blogId, {
+        title: blog?.title ?? "",
+        content: blog?.content ?? "",
+        coverImage: blog?.coverImage ?? undefined,
+        tags: blog?.tags ?? [],
+      });
+      setUploadedCover(blog?.coverImage ?? undefined);
+    }
+  }, [hasHydrated, blogId]);
+
+  const watched = watch();
+  const debouncedWatched = useDebounceValue(watched, 500);
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+    const current = useBlog.getState().draft;
+    if (!current || current.id !== blogId) return;
+
+    setDraftFields({
+      title: debouncedWatched.title ?? "",
+      content: debouncedWatched.content ?? "",
+      coverImage: debouncedWatched.coverImage,
+      tags: debouncedWatched.tags ?? [],
+    });
+  }, [debouncedWatched, hasHydrated, blogId]);
+
+  useEffect(() => {
     if (uploadedCover) {
       setValue("coverImage", uploadedCover, {
         shouldValidate: true,
@@ -67,116 +124,39 @@ const CreateBlogForm = ({ blog }: { blog?: Blog }) => {
     }
   }, [uploadedCover]);
 
-  useEffect(() => {
-    if (typeof content === "string") {
-      setValue("content", content, {
-        shouldValidate: true,
-        shouldDirty: true,
-        shouldTouch: true,
-      });
-    }
-  }, [content]);
-
-  useEffect(() => {
-    if (blog?.coverImage) {
-      setUploadedCover(blog.coverImage);
-    }
-  }, [blog?.coverImage]);
-
-  const onChange = (content: string) => {
-    setContent(content);
-  };
-
-  const onPublish: SubmitHandler<BlogSchemaType> = (data) => {
-    setSuccess("");
-    setError("");
+  const onPublish: SubmitHandler<BlogSchemaType> = async (data) => {
+    resetStatus();
 
     if (data.tags.length > 4) {
-      return setError("Select only 4 tags!");
+      return;
     }
 
-    startPublishing(() => {
-      if (blog) {
-        editBlog({ ...data, isPublished: true }, blog.id).then((data) => {
-          if (data.error) {
-            return setError(data.error);
-          }
-
-          if (data.success) {
-            return setSuccess(data.success);
-          }
-        });
-      } else {
-        createBlog({ ...data, isPublished: true }).then((data) => {
-          if (data.error) {
-            return setError(data.error);
-          }
-
-          if (data.success) {
-            return setSuccess(data.success);
-          }
-        });
-      }
-    });
+    const ok = await publish(data, blog?.id);
+    if (ok) {
+      router.push("/blog/feed/1");
+    }
   };
 
-  const onSaveDraft: SubmitHandler<BlogSchemaType> = (data) => {
-    setSuccess("");
-    setError("");
+  const onSaveDraft: SubmitHandler<BlogSchemaType> = async (data) => {
+    resetStatus();
+    if (data.tags.length > 4) return;
+    await saveAsDraft(data, blog?.id);
+  };
 
-    if (data.tags.length > 4) {
-      return setError("Select only 4 tags!");
+  const onDelete = async () => {
+    resetStatus();
+    if (!blog) return;
+
+    if (blog.coverImage) {
+      try {
+        await edgestore.publicFiles.delete({ url: blog.coverImage });
+      } catch {
+        // ignore error
+      }
     }
 
-    startSavingAsDraft(() => {
-      if (blog) {
-        editBlog({ ...data, isPublished: false }, blog.id).then((data) => {
-          if (data.error) {
-            return setError(data.error);
-          }
-
-          if (data.success) {
-            return setSuccess(data.success);
-          }
-        });
-      } else {
-        createBlog({ ...data, isPublished: false }).then((data) => {
-          if (data.error) {
-            return setError(data.error);
-          }
-
-          if (data.success) {
-            return setSuccess(data.success);
-          }
-        });
-      }
-    });
-  };
-
-  const onDelete: SubmitHandler<BlogSchemaType> = (data) => {
-    setSuccess("");
-    setError("");
-
-    startDeleting(async () => {
-      if (data.coverImage) {
-        await edgestore.publicFiles.delete({
-          url: data.coverImage,
-        });
-      }
-
-      if (blog) {
-        deleteBlog(blog.id).then((res) => {
-          if (res.error) {
-            setError(res.error);
-          }
-          if (res.success) {
-            setSuccess(res.success);
-          }
-        });
-
-        router.push("/blog/feed/1");
-      }
-    });
+    const ok = await deleteBlog(blog.id);
+    if (ok) router.push("/blog/feed/1");
   };
 
   return (
@@ -211,8 +191,18 @@ const CreateBlogForm = ({ blog }: { blog?: Blog }) => {
         )}
 
         <BlockNoteEditor
-          onChange={onChange}
-          initialContent={blog?.content ? blog.content : ""}
+          onChange={(value) => {
+            setValue("content", value, {
+              shouldValidate: true,
+              shouldDirty: true,
+              shouldTouch: true,
+            });
+          }}
+          initialContent={
+            useBlog.getState().draft?.id === blogId
+              ? useBlog.getState().draft?.content
+              : (blog?.content ?? "")
+          }
         />
         {errors.content && errors.content.message && (
           <span className="text-sm text-rose-400">
@@ -245,7 +235,7 @@ const CreateBlogForm = ({ blog }: { blog?: Blog }) => {
             />
             <Button
               type="button"
-              label={isSavingAsDraft ? "Saving..." : "Save as Draft"}
+              label={isSavingDraft ? "Saving..." : "Save as Draft"}
               onClick={handleSubmit(onSaveDraft)}
             />
           </div>
