@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { v4 as uuidv4 } from "uuid";
-import { Resend } from "resend";
+import { mailerooTransporter } from "./maileroo";
 
 export const getVerificationTokenByEmail = async (email: string) => {
   try {
@@ -38,15 +38,19 @@ export const sendEmailVerificationToken = async (
   email: string,
   token: string,
 ) => {
-  const resend = new Resend(process.env.RESEND_API_KEY);
   const emailVerificationLink = `${process.env.BASE_URL}/email-verification?token=${token}`;
 
-  const res = await resend.emails.send({
-    from: "onboarding@resend.dev",
-    to: "a.akhlaghi327@gmail.com",
-    subject: "Verify your Email",
-    html: `<p>Click <a href=${emailVerificationLink}>her</a> to verify your Eamil!</p>`,
-  });
+  try {
+    await mailerooTransporter.sendMail({
+      from: `Syntaxly <${process.env.MAILEROO_FROM_EMAIL}>`,
+      to: email,
+      subject: "Verify your Email",
+      html: `<p>Click <a href="${emailVerificationLink}">here</a> to verify your Email!</p>`,
+    });
 
-  return { error: res.error };
+    return { error: null };
+  } catch (error) {
+    console.error("Maileroo error: ", error);
+    return { error: "Failed to send verification email!" };
+  }
 };

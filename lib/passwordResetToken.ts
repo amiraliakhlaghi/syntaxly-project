@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { v4 as uuidv4 } from "uuid";
-import { Resend } from "resend";
+import { mailerooTransporter } from "./maileroo";
 
 export const getPasswordResetTokenByToken = async (token: string) => {
   try {
@@ -48,15 +48,19 @@ export const generatePasswordResetToken = async (email: string) => {
 };
 
 export const sendPasswordResetEmail = async (email: string, token: string) => {
-  const resend = new Resend(process.env.RESEND_API_KEY);
   const resetLink = `${process.env.BASE_URL}/password-reset-form?token=${token}`;
 
-  const res = await resend.emails.send({
-    from: "onboarding@resend.dev",
-    to: "a.akhlaghi327@gmail.com",
-    subject: "Password reset link 🎉",
-    html: `<p>Click <a href="${resetLink}">here</a> to reset your password!</p>`,
-  });
+  try {
+    await mailerooTransporter.sendMail({
+      from: `Syntaxly <${process.env.MAILEROO_FROM_EMAIL}>`,
+      to: email,
+      subject: "Password reset link 🎉",
+      html: `<p>Click <a href="${resetLink}">here</a> to reset your password!</p>`,
+    });
 
-  return { error: res.error };
+    return { error: null };
+  } catch (error) {
+    console.error("Maileroo error: ", error);
+    return { error: "Failed to send password reset email!" };
+  }
 };
