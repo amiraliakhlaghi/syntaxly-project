@@ -15,7 +15,6 @@ import { useNotification } from "@/store/use-notification";
 import { useBlog } from "@/store/use-blog";
 import { useReaction } from "@/store/use-reaction";
 import { useFollow } from "@/store/use-follow";
-import { logout } from "@/action/auth/logout";
 
 const UserButton = () => {
   const session = useSession();
@@ -39,13 +38,7 @@ const UserButton = () => {
       console.error("Error clearing stores:", error);
     }
 
-    try {
-      await logout();
-    } catch (error) {
-      console.error("Error during logout action:", error);
-    }
-
-    window.location.href = "/blog/feed/1?logout=" + Date.now();
+    window.location.href = "/api/logout";
   };
 
   return (
