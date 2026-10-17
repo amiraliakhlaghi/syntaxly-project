@@ -12,53 +12,58 @@ import { bookmarkBlog } from "@/action/blogs/bookmark-blog";
 import toast from "react-hot-toast";
 import { createNotification } from "@/action/notifications/createNotification";
 import { useSocket } from "@/store/use-socket";
+import { useReaction } from "@/store/use-reaction";
 
 const Reactions = ({ blog }: { blog: BlogWithUser }) => {
-  const sendNotification = useSocket((s) => s.sendNotification);
-
   const session = useSession();
   const userId = session.data?.user.userId;
-  
-  const [clapCount, setClapCount] = useState(blog._count.claps);
-  const [userHasClapped, setUserHasClapped] = useState(!!blog.claps.length);
 
-  const [userHasBookmarked, setUserHasBookmarked] = useState(
-    !!blog.bookmarks.length,
-  );
+  const storeState = useReaction((s) => s.blog[blog.id]);
+  const clapBlog = useReaction((s) => s.clapBlog);
+  const bookmarkBlog = useReaction((s) => s.bookmarkBlog);
+
+  const clapCount = storeState?.clapCount ?? blog._count.claps;
+  const userHasClapped = storeState?.userHasClapped ?? !!blog.claps.length;
+  const userHasBookmarked =
+    storeState?.userHasBookmarked ?? !!blog.bookmarks.length;
+
+  const initial = {
+    clapCount: blog._count.claps,
+    userHasClapped: !!blog.claps.length,
+    userHasBookmarked: !!blog.bookmarks.length,
+    userHasReported: !!(blog.reports?.length ?? 0),
+  };
+  const sendNotification = useSocket((s) => s.sendNotification);
 
   const router = useRouter();
 
   const handleClap = async () => {
     if (!userId) return toast.error("Please Create Account or login!");
 
-    const isUnclapping = userHasClapped;
-
-    setClapCount((prevCount) =>
-      userHasClapped ? prevCount - 1 : prevCount + 1,
-    );
-    setUserHasClapped((prevState) => !prevState);
-
-    await clapBlog(blog.id, userId);
-
-    if (!isUnclapping && blog.userId !== userId) {
-      await createNotification({
-        recipientId: blog.userId,
-        type: "NEW_CLAP",
+    try {
+      await clapBlog({
         blogId: blog.id,
-        entityType: "BLOG",
+        userId,
+        blogOwnerId: blog.userId,
+        initial,
       });
-      sendNotification(blog.userId);
+    } catch {
+      toast.error("Failed to clap");
     }
-
-    router.refresh();
   };
 
   const handleBookMark = async () => {
     if (!userId) return toast.error("Please Create Account or login!");
-    setUserHasBookmarked((prevCount) => !prevCount);
-    await bookmarkBlog(blog.id, userId);
 
-    router.refresh();
+    try {
+      await bookmarkBlog({
+        blogId: blog.id,
+        userId,
+        initial,
+      });
+    } catch {
+      toast.error("Failed to bookmark");
+    }
   };
 
   return (

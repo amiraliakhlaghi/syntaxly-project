@@ -70,6 +70,12 @@ const BlogContent = async ({ params }: BlogContentProps) => {
             Type="blog"
             blogId={blog.id}
             initialState={!!blog.reports?.length}
+            fullReactionState={{
+              clapCount: blog._count.claps,
+              userHasClapped: !!blog.claps.length,
+              userHasBookmarked: !!blog.bookmarks.length,
+              userHasReported: !!(blog.reports?.length ?? 0),
+            }}
           />
         </div>
 

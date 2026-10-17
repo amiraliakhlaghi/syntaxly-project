@@ -7,6 +7,7 @@ import {
 import { Dispatch, SetStateAction } from "react";
 import { IconType } from "react-icons";
 import { FieldErrors, UseFormRegister, FieldValues } from "react-hook-form";
+import { BlogReaction, CommentReaction } from "@/store/use-reaction";
 
 export interface BlogFeedProps {
   params: Promise<{ page: string }>;
@@ -162,10 +163,17 @@ export type UserWithFollows = User & {
 };
 
 export type ReportProps = {
-  blogId?: string;
-  commentId?: string;
   initialState?: boolean;
-  Type: "blog" | "comment";
+  fullReactionState: BlogReaction;
+  Type: "blog";
+  blogId: string;
+  commentId?: never;
+} | {
+  initialState?: boolean;
+  fullReactionState: CommentReaction;
+  Type: "comment";
+  commentId: string;
+  blogId?: never;
 };
 
 export type Filter = "all" | "published" | "draft" | "bookmarks" | "claps";

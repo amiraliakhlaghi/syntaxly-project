@@ -13,6 +13,7 @@ import { PiHandsClapping } from "react-icons/pi";
 import { clapComment } from "@/action/comments/clap-comment";
 import { CommentReactionsProps } from "@/types";
 import Report from "../common/Report";
+import { useReaction } from "@/store/use-reaction";
 
 const CommentReactions = ({
   comment,
@@ -23,8 +24,19 @@ const CommentReactions = ({
   const session = useSession();
   const userId = session.data?.user.userId;
 
-  const [clapCount, setClapCount] = useState(comment._count.claps);
-  const [userHasClapped, setUserHasClapped] = useState(!!comment.claps.length);
+  const storeState = useReaction((s) => s.comment[comment.id]);
+  const clapComment = useReaction((s) => s.clapComment);
+
+  const clapCount = storeState?.clapCount ?? comment._count.claps;
+  const userHasClapped = storeState?.userHasClapped ?? !!comment.claps.length;
+  const userHasReported =
+    storeState?.userHasReported ?? !!comment.reports?.length;
+
+  const initial = {
+    clapCount: comment._count.claps,
+    userHasClapped: !!comment.claps.length,
+    userHasReported: !!comment.reports?.length,
+  };
 
   const handleReply = () => {
     setShowForm((prev) => !prev);
@@ -49,12 +61,11 @@ const CommentReactions = ({
   const handleClap = async () => {
     if (!userId) return;
 
-    setClapCount((prevCount) =>
-      userHasClapped ? prevCount - 1 : prevCount + 1,
-    );
-    setUserHasClapped((prevState) => !prevState);
-
-    await clapComment(comment.id, userId);
+    try {
+      await clapComment({ commentId: comment.id, userId, initial });
+    } catch {
+      toast.error("Failed to clap");
+    }
   };
 
   return (
@@ -97,7 +108,8 @@ const CommentReactions = ({
         <Report
           Type="comment"
           commentId={comment.id}
-          initialState={!!comment.reports?.length}
+          initialState={userHasReported}
+          fullReactionState={initial}
         />
 
         {userId === comment.userId && (
