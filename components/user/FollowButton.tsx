@@ -8,51 +8,35 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { createNotification } from "@/action/notifications/createNotification";
 import { useSocket } from "@/store/use-socket";
+import { useFollow } from "@/store/use-follow";
 
 const FollowButton = ({
   user,
-  isFollowing: following,
+  isFollowing: initialFollowing,
   isList = false,
 }: {
   user: User | Pick<User, "id" | "name" | "image">;
   isFollowing: boolean;
   isList?: boolean;
 }) => {
-  const [isFollowing, setIsFollowing] = useState(following);
+  const storeFollowing = useFollow((s) => s.following[user.id]);
+  const follow = useFollow((s) => s.follow);
   const [loading, setLoading] = useState(false);
   const sendNotification = useSocket((s) => s.sendNotification);
 
-  const router = useRouter();
-
-  useEffect(() => {
-    setIsFollowing(following);
-  }, [following]);
+  const isFollowing = storeFollowing ?? initialFollowing;
 
   const handleFollow = async () => {
+    if (loading) return;
+    setLoading(true);
+
     try {
-      setLoading(true);
-
-      const res = await axios.post("/api/follow", { followId: user.id });
-
-      if (res.data.success === "followed") {
-        setIsFollowing(true);
-
-        if (user.id) {
-          await createNotification({
-            recipientId: user.id,
-            type: "FOLLOW",
-            entityType: "USER",
-          });
-
-          sendNotification(user.id);
-        }
-      } else if (res.data.success === "unfollowed") {
-        setIsFollowing(false);
-      }
-
-      router.refresh();
-    } catch (error) {
-      // toast.error(error.response.data.error);
+      await follow({
+        targetUserId: user.id,
+        initial: initialFollowing,
+      });
+    } catch {
+      toast.error("Failed to update follow state");
     } finally {
       setLoading(false);
     }

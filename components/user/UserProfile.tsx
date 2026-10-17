@@ -50,7 +50,7 @@ const UserProfile = async ({
             <h1 className="text-xl sm:text-3xl font-bold">{user.name}</h1>
             {user.bio && <p>{user.bio}</p>}
             <div className="flex items-center gap-4">
-              <FollowerList user={user} />
+              <FollowerList user={user} initialIsFollowing={isFollowing} />
               <FollowingList user={user} />
             </div>
           </div>

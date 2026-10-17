@@ -11,15 +11,28 @@ import {
 import { UserWithFollows } from "@/types";
 import UserSummary from "../blog/UserSummary";
 import FollowButton from "./FollowButton";
+import { useFollow } from "@/store/use-follow";
 
-const FollowerList = ({ user }: { user: UserWithFollows }) => {
+const FollowerList = ({
+  user,
+  initialIsFollowing,
+}: {
+  user: UserWithFollows;
+  initialIsFollowing: boolean;
+}) => {
   const [open, setOpen] = useState(false);
+
+  const storeFollowing = useFollow((s) => s.following[user.id]);
+  const currentFollowing = storeFollowing ?? initialIsFollowing;
+  const delta =
+    currentFollowing === initialIsFollowing ? 0 : currentFollowing ? 1 : -1;
+  const displayCount = user._count.followers + delta;
 
   return (
     <div>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger>
-          <span>{user._count.followers} Followers</span>
+          <span>{displayCount} Followers</span>
         </DialogTrigger>
         <DialogContent className="max-w-125 w-[90%]">
           <DialogHeader>
