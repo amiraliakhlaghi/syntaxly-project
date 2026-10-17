@@ -1,7 +1,9 @@
 import nodemailer from "nodemailer";
 
+const host = process.env.MAILEROO_SMTP_HOST;
+
 export const mailerooTransporter = nodemailer.createTransport({
-  host: "smtp.maileroo.com",
+  host,
   port: 587,
   secure: false,
   auth: {
