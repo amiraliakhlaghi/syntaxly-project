@@ -8,17 +8,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Blog, Comment, Notification } from "@/lib/generated/prisma/client";
 import { cn } from "@/lib/utils";
-import { useNotification } from "@/store/use-notification";
 import { Bell } from "lucide-react";
 import moment from "moment";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
-export type LatestNotification = Notification & {
-  blog: Pick<Blog, "id" | "title"> | null;
-  comment: Pick<Comment, "id" | "content" | "blogId"> | null;
-};
+import {
+  useNotification,
+  type LatestNotification,
+} from "@/store/use-notification";
 
 const Notifications = () => {
   const router = useRouter();

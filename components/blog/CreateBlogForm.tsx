@@ -12,19 +12,18 @@ import BlogFormTags from "./BlogFormTags";
 import dynamic from "next/dynamic";
 import Button from "../common/Button";
 import Alert from "../common/Alert";
-import { createBlog } from "@/action/blogs/create-blog";
 import { Blog } from "@/lib/generated/prisma/client";
-import { editBlog } from "@/action/blogs/edit-blog";
 import { useEdgeStore } from "@/lib/edgestore";
-import { deleteBlog } from "@/action/blogs/delete-blog";
 import { useRouter } from "next/navigation";
 import { useBlog } from "@/store/use-blog";
 import { useDebounceValue } from "@/hooks/useDebounceValue";
+import { useHydrate } from "@/hooks/use-hydrate";
 
 const BlockNoteEditor = dynamic(() => import("./editor/BlockNoteEditor"), {
   ssr: false,
 });
 const CreateBlogForm = ({ blog }: { blog?: Blog }) => {
+  useHydrate(useBlog);
   const session = useSession();
   const userId = session.data?.user.userId;
   const router = useRouter();
@@ -191,6 +190,7 @@ const CreateBlogForm = ({ blog }: { blog?: Blog }) => {
         )}
 
         <BlockNoteEditor
+          key={hasHydrated ? `editor-${blogId}` : "editor-loading"}
           onChange={(value) => {
             setValue("content", value, {
               shouldValidate: true,
@@ -199,8 +199,8 @@ const CreateBlogForm = ({ blog }: { blog?: Blog }) => {
             });
           }}
           initialContent={
-            useBlog.getState().draft?.id === blogId
-              ? useBlog.getState().draft?.content
+            hasHydrated && draft?.id === blogId
+              ? draft?.content
               : (blog?.content ?? "")
           }
         />
@@ -221,7 +221,7 @@ const CreateBlogForm = ({ blog }: { blog?: Blog }) => {
           {blog && (
             <div>
               <Button
-                onClick={handleSubmit(onDelete)}
+                onClick={onDelete}
                 type="button"
                 label={isDeleting ? "Deleting ..." : "Delete"}
               />

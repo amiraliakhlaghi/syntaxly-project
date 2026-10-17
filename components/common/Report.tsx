@@ -1,11 +1,9 @@
 "use client";
 
 import { reportBlog } from "@/action/blogs/report-blog";
-import { reportComment } from "@/action/comments/report-comment";
 import { useReaction } from "@/store/use-reaction";
 import { ReportProps } from "@/types";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
 import toast from "react-hot-toast";
 import { MdReport, MdOutlineReportGmailerrorred } from "react-icons/md";
 

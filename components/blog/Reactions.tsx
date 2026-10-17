@@ -3,14 +3,9 @@
 import { FaBookmark, FaRegBookmark, FaRegComment } from "react-icons/fa";
 import { PiHandsClapping } from "react-icons/pi";
 import { BlogWithUser } from "@/types";
-import { useState } from "react";
 import { FaHandsClapping } from "react-icons/fa6";
 import { useSession } from "next-auth/react";
-import { clapBlog } from "@/action/blogs/clap-blog";
-import { useRouter } from "next/navigation";
-import { bookmarkBlog } from "@/action/blogs/bookmark-blog";
 import toast from "react-hot-toast";
-import { createNotification } from "@/action/notifications/createNotification";
 import { useSocket } from "@/store/use-socket";
 import { useReaction } from "@/store/use-reaction";
 
@@ -34,8 +29,6 @@ const Reactions = ({ blog }: { blog: BlogWithUser }) => {
     userHasReported: !!(blog.reports?.length ?? 0),
   };
   const sendNotification = useSocket((s) => s.sendNotification);
-
-  const router = useRouter();
 
   const handleClap = async () => {
     if (!userId) return toast.error("Please Create Account or login!");

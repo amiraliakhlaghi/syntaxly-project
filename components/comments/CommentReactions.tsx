@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { FaHandsClapping } from "react-icons/fa6";
 import { FaRegComment } from "react-icons/fa";
@@ -10,7 +9,6 @@ import { useSession } from "next-auth/react";
 import { deleteComment } from "@/action/comments/delete-comment";
 import toast from "react-hot-toast";
 import { PiHandsClapping } from "react-icons/pi";
-import { clapComment } from "@/action/comments/clap-comment";
 import { CommentReactionsProps } from "@/types";
 import Report from "../common/Report";
 import { useReaction } from "@/store/use-reaction";

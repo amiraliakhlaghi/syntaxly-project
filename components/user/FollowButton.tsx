@@ -2,13 +2,10 @@
 
 import { User } from "@/lib/generated/prisma/client";
 import Button from "../common/Button";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import axios from "axios";
 import toast from "react-hot-toast";
-import { createNotification } from "@/action/notifications/createNotification";
 import { useSocket } from "@/store/use-socket";
 import { useFollow } from "@/store/use-follow";
+import { useState } from "react";
 
 const FollowButton = ({
   user,
