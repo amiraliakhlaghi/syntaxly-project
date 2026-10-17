@@ -12,6 +12,10 @@ import {
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { logout } from "@/action/auth/logout";
+import { useNotification } from "@/store/use-notification";
+import { useBlog } from "@/store/use-blog";
+import { useReaction } from "@/store/use-reaction";
+import { useFollow } from "@/store/use-follow";
 
 const UserButton = () => {
   const session = useSession();
@@ -20,8 +24,19 @@ const UserButton = () => {
 
   const isAdmin = session.data?.user.role === "ADMIN";
 
+  const clearNotifications = useNotification((s) => s.clear);
+  const clearDraft = useBlog((s) => s.clearDraft);
+  const clearReactions = useReaction((s) => s.clear);
+  const clearFollow = useFollow((s) => s.clear);
+
   const handleSignOut = async () => {
+    clearNotifications();
+    clearDraft();
+    clearReactions();
+    clearFollow();
+
     await logout();
+
     window.location.href = "/blog/feed/1";
   };
 
