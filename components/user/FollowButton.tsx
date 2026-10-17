@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { createNotification } from "@/action/notifications/createNotification";
-import { useSocket } from "@/context/SocketContext";
+import { useSocket } from "@/store/use-socket";
 
 const FollowButton = ({
   user,
@@ -20,7 +20,7 @@ const FollowButton = ({
 }) => {
   const [isFollowing, setIsFollowing] = useState(following);
   const [loading, setLoading] = useState(false);
-  const { sendNotification } = useSocket();
+  const sendNotification = useSocket((s) => s.sendNotification);
 
   const router = useRouter();
 

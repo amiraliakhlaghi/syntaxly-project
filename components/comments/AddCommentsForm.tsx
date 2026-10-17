@@ -9,8 +9,8 @@ import TextAreaField from "../common/TextAreaField";
 import { addComment } from "@/action/comments/add-comment";
 import { toast } from "react-hot-toast";
 import { createNotification } from "@/action/notifications/createNotification";
-import { useSocket } from "@/context/SocketContext";
 import { AddCommentsProps } from "@/types";
+import { useSocket } from "@/store/use-socket";
 
 const AddCommentsForm = ({
   blogId,
@@ -21,7 +21,7 @@ const AddCommentsForm = ({
   creatorId,
 }: AddCommentsProps) => {
   const [isPending, startTransition] = useTransition();
-  const { sendNotification } = useSocket();
+  const sendNotification = useSocket((s) => s.sendNotification);
 
   const {
     register,

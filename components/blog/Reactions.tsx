@@ -10,14 +10,15 @@ import { clapBlog } from "@/action/blogs/clap-blog";
 import { useRouter } from "next/navigation";
 import { bookmarkBlog } from "@/action/blogs/bookmark-blog";
 import toast from "react-hot-toast";
-import { useSocket } from "@/context/SocketContext";
 import { createNotification } from "@/action/notifications/createNotification";
+import { useSocket } from "@/store/use-socket";
 
 const Reactions = ({ blog }: { blog: BlogWithUser }) => {
+  const sendNotification = useSocket((s) => s.sendNotification);
+
   const session = useSession();
   const userId = session.data?.user.userId;
-  const { sendNotification } = useSocket();
-
+  
   const [clapCount, setClapCount] = useState(blog._count.claps);
   const [userHasClapped, setUserHasClapped] = useState(!!blog.claps.length);
 

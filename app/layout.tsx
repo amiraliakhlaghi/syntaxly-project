@@ -7,7 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { auth } from "@/auth";
 import { SessionProvider } from "next-auth/react";
 import { EdgeStoreProvider } from "@/lib/edgestore";
-import { SocketContextProvider } from "@/context/SocketContext";
+import { SocketInitializer } from "@/components/providers/SocketInitializer";
 import NextTopLoader from "nextjs-toploader";
 import ToastProvider from "@/components/layout/ToastProvider";
 
@@ -37,44 +37,43 @@ export default async function RootLayout({
   return (
     <EdgeStoreProvider>
       <SessionProvider session={session}>
-        <SocketContextProvider>
-          <html
-            lang="en"
-            suppressHydrationWarning
-            className={cn("font-sans", geist.variable)}
+        <SocketInitializer />
+        <html
+          lang="en"
+          suppressHydrationWarning
+          className={cn("font-sans", geist.variable)}
+        >
+          <body
+            className={cn(
+              "antialiased flex flex-col min-h-screen px-2 dark:bg-slate-950",
+              poppins.variable,
+            )}
           >
-            <body
-              className={cn(
-                "antialiased flex flex-col min-h-screen px-2 dark:bg-slate-950",
-                poppins.variable,
-              )}
+            <NextTopLoader
+              color="#3b82f6"
+              height={4}
+              showSpinner={false}
+              shadow="0 0 10px #3b82f6,0 0 5px #3b82f6"
+              initialPosition={0.08}
+              crawlSpeed={200}
+              easing="ease"
+              speed={200}
+              zIndex={1600}
+              showAtBottom={false}
+            />
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
             >
-              <NextTopLoader
-                color="#3b82f6"
-                height={4}
-                showSpinner={false}
-                shadow="0 0 10px #3b82f6,0 0 5px #3b82f6"
-                initialPosition={0.08}
-                crawlSpeed={200}
-                easing="ease"
-                speed={200}
-                zIndex={1600}
-                showAtBottom={false}
-              />
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-              >
-                <ToastProvider />
-                <Navbar />
-                <main className="grow">{children}</main>
-                {modal}
-              </ThemeProvider>
-            </body>
-          </html>
-        </SocketContextProvider>
+              <ToastProvider />
+              <Navbar />
+              <main className="grow">{children}</main>
+              {modal}
+            </ThemeProvider>
+          </body>
+        </html>
       </SessionProvider>
     </EdgeStoreProvider>
   );
