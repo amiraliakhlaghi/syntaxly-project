@@ -15,6 +15,7 @@ import { useNotification } from "@/store/use-notification";
 import { useBlog } from "@/store/use-blog";
 import { useReaction } from "@/store/use-reaction";
 import { useFollow } from "@/store/use-follow";
+import { logout } from "@/action/auth/logout";
 
 const UserButton = () => {
   const session = useSession();
@@ -29,14 +30,22 @@ const UserButton = () => {
   const clearFollow = useFollow((s) => s.clear);
 
   const handleSignOut = async () => {
-    clearNotifications();
-    clearDraft();
-    clearReactions();
-    clearFollow();
+    try {
+      clearNotifications();
+      clearDraft();
+      clearReactions();
+      clearFollow();
+    } catch (error) {
+      console.error("Error clearing stores:", error);
+    }
 
-    await signOut({ redirect: false });
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Error during logout action:", error);
+    }
 
-    window.location.href = "/blog/feed/1";
+    window.location.href = "/blog/feed/1?logout=" + Date.now();
   };
 
   return (
