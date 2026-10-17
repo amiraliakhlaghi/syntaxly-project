@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { getUserByEmail } from "@/lib/user";
 import { LoginSchema, LoginSchemaType } from "@/schemas/LoginSchema";
 import { signIn } from "@/auth";
@@ -44,6 +45,8 @@ export const login = async (values: LoginSchemaType) => {
   }
 
   try {
+    revalidatePath("/", "layout");
+
     await signIn("credentials", {
       email,
       password,
