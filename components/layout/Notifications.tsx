@@ -1,19 +1,17 @@
-import { getNotifications } from "@/action/notifications/getNotifications";
-import {
-  markAllNotificationsAsRead,
-  markNotificationAsRead,
-} from "@/action/notifications/markAsRead";
+"use client";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSocket } from "@/context/SocketContext";
 import { Blog, Comment, Notification } from "@/lib/generated/prisma/client";
 import { cn } from "@/lib/utils";
+import { useNotification } from "@/store/use-notification";
 import { Bell } from "lucide-react";
 import moment from "moment";
+import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -25,37 +23,25 @@ export type LatestNotification = Notification & {
 const Notifications = () => {
   const router = useRouter();
   const pathName = usePathname();
+  const { data: session } = useSession();
+  const userId = session?.user?.userId;
 
-  const [notifications, setNotifications] = useState<LatestNotification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { refetchNotifications, handleRefetchNotifications } = useSocket();
+  const notifications = useNotification((s) => s.notifications);
+  const unreadCount = useNotification((s) => s.unreadCount);
+  const loading = useNotification((s) => s.isLoading);
+  const error = useNotification((s) => s.error);
+  const refetch = useNotification((s) => s.refetch);
+  const markAsRead = useNotification((s) => s.markAsRead);
+  const markAllAsRead = useNotification((s) => s.markAllAsRead);
+  const clear = useNotification((s) => s.clear);
 
   useEffect(() => {
-    const handleFetch = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const res = await getNotifications();
-
-        if (res.success) {
-          setNotifications(res.success.notifications);
-          setUnreadCount(res.success.unreadNotificationCount);
-        }
-
-        if (res.error) {
-          setError(res.error);
-        }
-      } catch (error) {
-        setError("An error occured!");
-      } finally {
-        setLoading(false);
-      }
-    };
-    handleFetch();
-  }, [refetchNotifications]);
+    if (userId) {
+      refetch();
+    } else {
+      clear();
+    }
+  }, [userId, refetch, clear]);
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -86,13 +72,11 @@ const Notifications = () => {
       router.push(`/user/${n.senderId}/1`);
     }
 
-    await markNotificationAsRead(n.id);
-    handleRefetchNotifications();
+    await markAsRead(n.id);
   };
 
-  const markAllAsRead = async () => {
-    await markAllNotificationsAsRead();
-    handleRefetchNotifications();
+  const handleMarkAll = async () => {
+    await markAllAsRead();
   };
 
   return (
@@ -108,7 +92,7 @@ const Notifications = () => {
       <DropdownMenuContent className="w-full max-w-100">
         <div className="flex gap-4 justify-between mb-2 p-2">
           <h3 className="font-bold text-xl">Notifications</h3>
-          <button onClick={markAllAsRead}>Mark all as read</button>
+          <button onClick={handleMarkAll}>Mark all as read</button>
         </div>
 
         {loading && (

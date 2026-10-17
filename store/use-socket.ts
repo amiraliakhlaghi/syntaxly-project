@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { io, Socket } from "socket.io-client";
+import { useNotification } from "./use-notification";
 
 type SocketState = {
   socket: Socket | null;
@@ -39,10 +40,9 @@ export const useSocket = create<SocketState>((set, get) => ({
       set({ isConnected: false });
     });
 
-    //   socket.on("getNotifications", () => {
-    //     useNotification.getState().refetch();
-    //   });
-    //
+    socket.on("getNotifications", () => {
+      useNotification.getState().refetch();
+    });
 
     set({ socket, userId });
   },
