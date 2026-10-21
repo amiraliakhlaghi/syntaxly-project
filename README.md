@@ -1,4 +1,4 @@
-![[nextjs-blog-project-thubnail.png]]
+![Syntaxly — Developer Blogging Platform](./docs/nextjs-blog-project-thubnail.png)
 
 **Write, share, and discover developer stories.**
 A full-stack blogging platform built for developers — create rich posts with a Notion-like editor, follow other writers, react to content, and moderate a community through a dedicated admin panel.
