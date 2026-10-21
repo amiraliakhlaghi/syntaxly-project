@@ -9,7 +9,6 @@ A full-stack blogging platform built for developers — create rich posts with a
 [![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Auth.js](https://img.shields.io/badge/Auth.js-5-6C47FF?logo=auth0&logoColor=white)](https://authjs.dev)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](#-license)
 
 ---
 ## 📑 Table of Contents
@@ -27,7 +26,6 @@ A full-stack blogging platform built for developers — create rich posts with a
 - [Feature Documentation](#-feature-documentation)
 - [Known Limitations](#-known-limitations)
 - [Credits](#-credits)
-- [License](#-license)
 
 ---
 ## 🔍 Overview
@@ -251,7 +249,5 @@ This project started as a personal implementation of an instructional course on 
 - [Maileroo](https://maileroo.com) — Transactional email
 - [BlockNote](https://www.blocknotejs.org) — Block-based rich text editor
 - [shadcn/ui](https://ui.shadcn.com) — UI primitives
----
-## 📄 License
-Distributed under the **MIT License**. See [`LICENSE`](./LICENSE) for more information.
+
 
